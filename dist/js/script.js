@@ -773,10 +773,11 @@ window.onload = function () {
                 document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList").appendChild(dropdownListItem);
             });
             // console.log(DROPDOWN_DATA.length);
+            var dropdownListHeight = document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList").offsetHeight;
+            var dropdownListHeightRequired = dropdownListHeight * 5 / DROPDOWN_DATA.length;
             if (DROPDOWN_DATA.length > 5) {
-                var dropdownListHeight = document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList").offsetHeight;
-                var dropdownListHeightRequired = dropdownListHeight * 5 / DROPDOWN_DATA.length;
                 document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList").style.height = dropdownListHeightRequired + "px";
+                document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList").className += " big";
             }
             // console.log(dropdownListHeight);
             var toBottom = getDropdownBottomOffset(clickedDropdownNumber, dropdownListHeightRequired);
@@ -795,9 +796,7 @@ window.onload = function () {
 
         function getDropdownBottomOffset(clickedDropdownNumber) {
             var windowInnerHeight = window.innerHeight;
-            // var windowScrollTop = window.scrollY;
             var bottomOffset = document.getElementsByClassName("dropdown")[clickedDropdownNumber].getBoundingClientRect().bottom;
-            // console.log("Scroll top: " + windowScrollTop + "; Bottom offset is: " + bottomOffset + "; Window height: " + windowInnerHeight);
 
             console.log("To bottom: " + (windowInnerHeight - bottomOffset));
 
