@@ -20,12 +20,19 @@ window.onload = function(){
                 e.stopPropagation();
                 var clickedDropdownNumber = Array.from(document.getElementsByClassName("dropdown")).indexOf(e.target.closest(".dropdown"));
                 toggleDropdown(clickedDropdownNumber);
-            })
+            });
+            dropdown.querySelector(".dropdownInput").addEventListener("input", function(e){
+                console.log(e.target.value);
+            });
         });
 
         document.addEventListener("click", function(){
             closeAllDropdowns();
         });
+
+        function getLabelsFromArray(){
+            
+        }
 
         function toggleDropdown(clickedDropdownNumber){
             if (!document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList")) {

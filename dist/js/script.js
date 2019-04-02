@@ -744,6 +744,9 @@ window.onload = function () {
                 var clickedDropdownNumber = (0, _from2.default)(document.getElementsByClassName("dropdown")).indexOf(e.target.closest(".dropdown"));
                 toggleDropdown(clickedDropdownNumber);
             });
+            dropdown.querySelector(".dropdownInput").addEventListener("input", function (e) {
+                console.log(e.target.value);
+            });
         });
 
         document.addEventListener("click", function () {
