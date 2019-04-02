@@ -1,0 +1,36 @@
+
+.dropdown
+    display: inline-block
+    margin: 0 auto
+    text-align: center
+    position: relative
+
+    &Input
+        display: inline-block
+        width: auto
+        &:focus
+            background-color: #f4f4f4
+    
+    &Button
+        height: 100%
+        font-size: 16px
+    &List
+        position: absolute
+        top: 105%
+        left: 0
+        z-index: 1000
+        width: 100%
+        border: 1px solid black
+        opacity: 1
+        overflow-y: scroll
+        &.top
+            bottom: 105%
+            top: auto
+    &ListItem
+        cursor: pointer
+        padding: 10px
+        background-color: #fff
+        &:nth-child(odd)
+            background-color: #f4f4f4
+        &:hover
+            background-color: lightgray
