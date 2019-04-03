@@ -736,10 +736,17 @@ window.onload = function () {
 
     var Dropdown = function Dropdown() {
 
-        // Initialization
-        var DROPDOWN_DATA = [{ "label": "Bawcomville", "id": 0 }, { "label": "Rushford", "id": 1 }, { "label": "Bayview Village", "id": 2 }, { "label": "Oak Grove", "id": 3 }, { "label": "Smackover", "id": 4 }, { "label": "Natchez", "id": 5 }, { "label": "Baton Rouge", "id": 6 }, { "label": "Fremont", "id": 7 }, { "label": "Arcadia", "id": 8 }, { "label": "Cobban", "id": 9 }, { "label": "Drywood", "id": 10 }, { "label": "Oakville", "id": 11 }];
+        var dropdownData;
+        var dropdownContainer;
 
         var currentValues = [];
+
+        function initialize(container, data) {
+            dropdownData = data;
+            dropdownContainer = container;
+            console.log(dropdownContainer);
+            console.log(dropdownData);
+        }
 
         function initializeDropdowns(amount) {
             var dropdownsSection = document.getElementById("dropdowns");
@@ -927,12 +934,14 @@ window.onload = function () {
         }
 
         return {
-            init: initializeDropdowns
+            init: initialize
         };
     };
 
-    var dropdown = new Dropdown();
-    dropdown.init(7);
+    var DROPDOWN_DATA_1 = [{ "label": "Bawcomville", "id": 0 }, { "label": "Rushford", "id": 1 }, { "label": "Bayview Village", "id": 2 }, { "label": "Oak Grove", "id": 3 }, { "label": "Smackover", "id": 4 }, { "label": "Natchez", "id": 5 }, { "label": "Baton Rouge", "id": 6 }, { "label": "Fremont", "id": 7 }, { "label": "Arcadia", "id": 8 }, { "label": "Cobban", "id": 9 }, { "label": "Drywood", "id": 10 }, { "label": "Oakville", "id": 11 }];
+
+    var dropdown1 = new Dropdown();
+    dropdown1.init("dropdown1", DROPDOWN_DATA_1);
 };
 
 },{"babel-runtime/core-js/array/from":1}]},{},[54]);
