@@ -5,6 +5,7 @@ window.onload = function(){
 
     var Dropdown = function(){
 
+        // Initialization
         const DROPDOWN_DATA = [
             { "label": "Bawcomville", "id": 0 }, 
             { "label": "Rushford", "id": 1 }, 
@@ -20,27 +21,115 @@ window.onload = function(){
             { "label": "Oakville", "id": 11 }
         ]
 
-        Array.from(document.getElementsByClassName("dropdown")).forEach(function(dropdown){
-            var clickedDropdownNumber;
-            dropdown.addEventListener("click", function(e){
-                e.stopPropagation();
-                clickedDropdownNumber = Array.from(document.getElementsByClassName("dropdown")).indexOf(e.target.closest(".dropdown"));
-                toggleDropdown(clickedDropdownNumber);
+        var currentValues = [];
+
+        function initializeDropdowns(amount){
+            var dropdownsSection = document.getElementById("dropdowns");
+            for(var i=0; i<amount; i++){
+                var wrapper = document.createElement("div");
+                wrapper.className = "wrapper";
+                
+                var dropdown = document.createElement("div");
+                dropdown.className = "dropdown";
+                
+                var dropdownInput = document.createElement("input");
+                dropdownInput.type = "text";
+                dropdownInput.name = "city";
+                dropdownInput.className = "dropdownInput";
+                dropdownInput.placeholder = "Enter something";
+                dropdownInput.autocomplete = "off";
+                dropdownInput.required = true;
+
+                var button = document.createElement("button");
+                button.className = "btn dropdownButton";
+                button.innerHTML = "&#9660;";
+
+                dropdownsSection.appendChild(wrapper);
+                wrapper.appendChild(dropdown);
+                dropdown.appendChild(dropdownInput);
+                dropdown.appendChild(button);
+            }
+            console.log("Initialized dropdowns");
+            initializeEventListeners();
+            
+        }
+
+        function initializeEventListeners(){
+            Array.from(document.getElementsByClassName("dropdown")).forEach(function(dropdown){
+                var clickedDropdownNumber;
+                dropdown.addEventListener("click", function(e){
+                    e.stopPropagation();
+                    clickedDropdownNumber = Array.from(document.getElementsByClassName("dropdown")).indexOf(e.target.closest(".dropdown"));
+                    openDropdownList(clickedDropdownNumber);
+                });
+                dropdown.querySelector(".dropdownInput").addEventListener("input", function(e){
+                    clearDropdownListItems(clickedDropdownNumber);
+                    var sortedArray = getMatchesFromArray(e.target.value, clickedDropdownNumber);
+                    generateDropdownListItems(clickedDropdownNumber, sortedArray);
+                });
             });
-            dropdown.querySelector(".dropdownInput").addEventListener("input", function(e){
-                clearDropdownListItems(clickedDropdownNumber);
-                var sortedArray = getLabelsFromArray(e.target.value, clickedDropdownNumber);
-                console.log(sortedArray, clickedDropdownNumber);
-                generateDropdownListItems(clickedDropdownNumber, sortedArray);
+            console.log("Set event listeners for dropdowns and inputs");
+            initCurrentValues();
+        }
+
+        function initCurrentValues(){
+            Array.from(document.getElementsByClassName("dropdown")).forEach(function(dropdown, index){
+                currentValues[index] = dropdown.querySelector(".dropdownInput").value;
             });
+            console.log("Initial values: ", currentValues);
+        }
+        // Initial state set
+
+        // ************************************************************************************************ //
+
+        // Setting event listeners for resizing, scrolling and clicking outside of dropdowns
+        ["click", "scroll"].forEach(function(e){
+            document.addEventListener(e, refreshInputs);
         });
 
-        document.addEventListener("click", function(){
+        window.addEventListener("resize", function(){
+            refreshInputs();
+        });
+
+        function refreshInputs(){
             closeAllDropdowns();
-        });
+            setCurrentValues();
+        }
 
-        function getLabelsFromArray(string){
-            console.log("Input is: " + string);
+        // Closing all dropdowns reseting focus on inputs (when resizing, scrolling and clicking outside of dropdowns)
+        function closeAllDropdowns(){
+            var dropdowns = document.getElementsByClassName("dropdownList");
+            Array.from(dropdowns).forEach(function(dropdown){
+                dropdown.parentNode.removeChild(dropdown);
+                window.focus();
+            });
+        }
+
+        // Setting current values into inputs (when resizing, scrolling and clicking outside of dropdowns)
+        function setCurrentValues(){
+            var label;
+            var dropdown = document.getElementsByClassName("dropdown");
+            currentValues.forEach(function(id, index){
+                if(id){
+                    DROPDOWN_DATA.forEach(function(obj){
+                        if(obj["id"] == id){
+                            label = obj["label"];
+                        }
+                    });
+                    dropdown[index].querySelector(".dropdownInput").value = label;
+                } else {
+                    dropdown[index].querySelector(".dropdownInput").value = "";
+                }
+            });
+        }
+
+        // Removing focus state from inputs
+        function unfocusAll(){
+            
+        }
+
+        // Getting array of matched objects from objects aray
+        function getMatchesFromArray(string){
             var dropdownDataSorted = [];
             if(string){
                 DROPDOWN_DATA.forEach(function(item){
@@ -48,94 +137,92 @@ window.onload = function(){
                         dropdownDataSorted.push(item);
                     }
                 });
+                if(dropdownDataSorted.length<=0){
+                    dropdownDataSorted = [{"label" : "No matching elements", "id" : "error"}];
+                }
             } else {
                 dropdownDataSorted = DROPDOWN_DATA;
             }
             return dropdownDataSorted;
         }
 
+        // Setting label into input field by id of element
         function setInputValue(clickedDropdownNumber, id, array){
             var label;
+            var dropdown = document.getElementsByClassName("dropdown");
             array.forEach(function(obj){
-                if(obj["id"] == id){
-                    console.log("Obj Id: " + obj["id"]);
+                if(obj["id"] == id && obj["id"]!== "error"){
                     label = obj["label"];
                 }
-            })
-            document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownInput").value = label;
+            });
+            dropdown[clickedDropdownNumber].querySelector(".dropdownInput").value = label;
         }
 
-        function toggleDropdown(clickedDropdownNumber){
-            if (!document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList")) {
+        // Creating dropdown list for clicked dropdown element
+        function openDropdownList(clickedDropdownNumber){
+            var dropdown = document.getElementsByClassName("dropdown")[clickedDropdownNumber];
+            if (!dropdown.querySelector(".dropdownList")) {
                 var dropdownList = document.createElement("ul");
-                var dropdown = document.getElementsByClassName("dropdown")[clickedDropdownNumber];
                 dropdownList.className = "dropdownList";
                 dropdown.appendChild(dropdownList);
                 dropdown.getElementsByClassName("dropdownInput")[0].focus();
                 dropdown.getElementsByClassName("dropdownInput")[0].value="";
                 generateDropdownListItems(clickedDropdownNumber, DROPDOWN_DATA);
-            } else {
-                var elem = document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList");
-                elem.parentNode.removeChild(elem);
             }
         }
 
+        // Generating dropdown list items and adding them into dropdown list, checking size of dropdown list and it's position relative to dropdown element
         function generateDropdownListItems(clickedDropdownNumber, array){
-            document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList").removeAttribute("style");
-            document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList").classList.remove("big");
+            var dropdown = document.getElementsByClassName("dropdown")[clickedDropdownNumber];
+            dropdown.querySelector(".dropdownList").removeAttribute("style");
+            dropdown.querySelector(".dropdownList").classList.remove("big");
             array.forEach(function(listItem){
                 var dropdownListItem = document.createElement("li");
                 dropdownListItem.className = "dropdownListItem";
                 dropdownListItem.setAttribute("data-id", listItem["id"]);
                 dropdownListItem.innerHTML = listItem["label"];
                 dropdownListItem.addEventListener("click", function(e){
-                    setInputValue(clickedDropdownNumber, parseInt(e.target.dataset.id), array);
+                    e.stopPropagation();
+                    if(e.target.dataset.id !== "error") {
+                        setInputValue(clickedDropdownNumber, parseInt(e.target.dataset.id), array);
+                        currentValues[clickedDropdownNumber] = e.target.dataset.id;
+                        console.log("Current values: ", currentValues);
+                        closeAllDropdowns();
+                    }
                 });
-                document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList").appendChild(dropdownListItem);
+                dropdown.querySelector(".dropdownList").appendChild(dropdownListItem);
             });
-            var dropdownListHeight = document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList").offsetHeight;
+            var dropdownListHeight = dropdown.querySelector(".dropdownList").offsetHeight;
             var dropdownListHeightRequired = dropdownListHeight*5/array.length;
-            console.log("sorted array length: " + array.length);
             if(array.length > 5) {
-                document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList").style.height = dropdownListHeightRequired + "px";
-                document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList").className += " big";
+                dropdown.querySelector(".dropdownList").style.height = dropdownListHeightRequired + "px";
+                dropdown.querySelector(".dropdownList").className += " big";
             }
             var toBottom = getDropdownBottomOffset(clickedDropdownNumber, dropdownListHeightRequired);
-            console.log(toBottom, dropdownListHeightRequired);
             if(toBottom < dropdownListHeightRequired) {
-                document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList").className += " top";
+                dropdown.querySelector(".dropdownList").className += " top";
             }
         }
 
-        function closeAllDropdowns(){
-            var dropdowns = document.getElementsByClassName("dropdownList");
-            Array.from(dropdowns).forEach(function(dropdown){
-                dropdown.parentNode.removeChild(dropdown);
-            });
-        }
-
+        // Clearing dropdown list (before generate new list items with input matches)
         function clearDropdownListItems(clickedDropdownNumber){
             document.getElementsByClassName("dropdown")[clickedDropdownNumber].querySelector(".dropdownList").innerHTML = "";
         }
 
+        // Getting bottom offset for dropdown list
         function getDropdownBottomOffset(clickedDropdownNumber){
             var windowInnerHeight = window.innerHeight;
             var bottomOffset = document.getElementsByClassName("dropdown")[clickedDropdownNumber].getBoundingClientRect().bottom;
-            console.log("To bottom: " + (windowInnerHeight-bottomOffset));
             return (windowInnerHeight-bottomOffset);
         }
 
-        function initializeDropdown(){
-            console.log("Dropdown Initialized!");
-        }
-
         return {
-            init: initializeDropdown
+            init: initializeDropdowns
         }
     }
 
     var dropdown = new Dropdown();
-    dropdown.init();
+    dropdown.init(7);
 
 }
 
