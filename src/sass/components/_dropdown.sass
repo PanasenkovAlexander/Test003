@@ -23,16 +23,17 @@
         width: 100%
         border: 1px solid black
         opacity: 1
-        overflow-y: none
-        &.big
-            overflow-y: scroll
+        overflow-y: auto
+        height: auto
+        max-height: 200px
         &.top
             bottom: 105%
             top: auto
     &ListItem
         cursor: pointer
-        padding: 10px
+        height: 40px
         background-color: #fff
+        line-height: 40px
         &:nth-child(odd)
             background-color: #f4f4f4
         &:hover

@@ -73,16 +73,17 @@ input {
     width: 100%;
     border: 1px solid black;
     opacity: 1;
-    overflow-y: none; }
-    .dropdownList.big {
-      overflow-y: scroll; }
+    overflow-y: auto;
+    height: auto;
+    max-height: 200px; }
     .dropdownList.top {
       bottom: 105%;
       top: auto; }
   .dropdownListItem {
     cursor: pointer;
-    padding: 10px;
-    background-color: #fff; }
+    height: 40px;
+    background-color: #fff;
+    line-height: 40px; }
     .dropdownListItem:nth-child(odd) {
       background-color: #f4f4f4; }
     .dropdownListItem:hover {

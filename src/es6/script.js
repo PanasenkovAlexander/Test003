@@ -101,7 +101,6 @@ window.onload = function(){
             var dropdowns = document.getElementsByClassName("dropdownList");
             Array.from(dropdowns).forEach(function(dropdown){
                 dropdown.parentNode.removeChild(dropdown);
-                window.focus();
             });
         }
 
@@ -193,13 +192,9 @@ window.onload = function(){
                 dropdown.querySelector(".dropdownList").appendChild(dropdownListItem);
             });
             var dropdownListHeight = dropdown.querySelector(".dropdownList").offsetHeight;
-            var dropdownListHeightRequired = dropdownListHeight*5/array.length;
-            if(array.length > 5) {
-                dropdown.querySelector(".dropdownList").style.height = dropdownListHeightRequired + "px";
-                dropdown.querySelector(".dropdownList").className += " big";
-            }
-            var toBottom = getDropdownBottomOffset(clickedDropdownNumber, dropdownListHeightRequired);
-            if(toBottom < dropdownListHeightRequired) {
+            var toBottom = getDropdownBottomOffset(clickedDropdownNumber, dropdownListHeight);
+            console.log(dropdownListHeight);
+            if(toBottom < dropdownListHeight) {
                 dropdown.querySelector(".dropdownList").className += " top";
             }
         }
