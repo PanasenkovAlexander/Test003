@@ -7,18 +7,19 @@ window.onload = function(){
 
         var dropdownData;
         var dropdownContainerName;
-        var dropdownsSection;
-        var currentValue;
+        var dropdownSections;
+        var currentValues = [];
 
         function initializeDropdown(container, data){
             dropdownData = data;
             dropdownContainerName = container;
-            dropdownsSection = document.getElementById(container);
-            console.log(dropdownData);
+
+            dropdownSections = document.getElementsByClassName(container);
+
             console.log(dropdownContainerName);
-            console.log(dropdownsSection);
 
             createDropdown();
+            initCurrentValues();
         }
 
         ["click", "scroll"].forEach(function(e){
@@ -34,69 +35,88 @@ window.onload = function(){
             setCurrentValues();
         }
 
+        function initCurrentValues(){
+            Array.from(dropdownSections).forEach(function(dropdownSection){
+                currentValues.push(dropdownSection.querySelector(".dropdownInput").value);
+            });
+            console.log(currentValues);
+        }
+
         // Closing all dropdowns reseting focus on inputs (when resizing, scrolling and clicking outside of dropdowns)
         function closeAllDropdowns(){
-            var dropdownList = dropdownsSection.querySelector(".dropdownList");
-            if(dropdownList){
-                dropdownList.parentNode.removeChild(dropdownList);
-            }
+            Array.from(dropdownSections).forEach(function(dropdownSection){
+                var dropdownList = dropdownSection.querySelector(".dropdownList");
+                if(dropdownList){
+                    dropdownList.parentNode.removeChild(dropdownList);
+                }
+            });
+            
         }
 
         // Setting current values into inputs (when resizing, scrolling and clicking outside of dropdowns)
         function setCurrentValues(){
             var label;
-            if(currentValue){
-                dropdownData.forEach(function(obj){
-                    if(obj["id"] == currentValue){
-                        label = obj["label"];
-                    }
-                });
-                dropdownsSection.querySelector(".dropdownInput").value = label;
-            } else {
-                dropdownsSection.querySelector(".dropdownInput").value = "";
-            }
+            currentValues.forEach(function(currentValue, index){
+                if(currentValue){
+                    dropdownData.forEach(function(obj){
+                        if(obj["id"] == currentValue){
+                            label = obj["label"];
+                        }
+                    });
+                    dropdownSections[index].querySelector(".dropdownInput").value = label;
+                } else {
+                    dropdownSections[index].querySelector(".dropdownInput").value = "";
+                }
+            });
+            
         }
 
         function createDropdown(){
-            
-            var wrapper = document.createElement("div");
-            wrapper.className = "wrapper";
-            
-            var dropdown = document.createElement("div");
-            dropdown.className = "dropdown";
-            
-            var dropdownInput = document.createElement("input");
-            dropdownInput.type = "text";
-            dropdownInput.name = "city";
-            dropdownInput.className = "dropdownInput";
-            dropdownInput.placeholder = "Enter something";
-            dropdownInput.autocomplete = "off";
-            dropdownInput.required = true;
 
-            var button = document.createElement("button");
-            button.className = "btn dropdownButton";
-            button.innerHTML = "&#9660;";
+            Array.from(dropdownSections).forEach(function(dropdownSection){
+                var wrapper = document.createElement("div");
+                wrapper.className = "wrapper";
+                
+                var dropdown = document.createElement("div");
+                dropdown.className = "dropdown";
+                
+                var dropdownInput = document.createElement("input");
+                dropdownInput.type = "text";
+                dropdownInput.name = "city";
+                dropdownInput.className = "dropdownInput";
+                dropdownInput.placeholder = "Enter something";
+                dropdownInput.autocomplete = "off";
+                dropdownInput.required = true;
 
-            dropdownsSection.appendChild(wrapper);
-            wrapper.appendChild(dropdown);
-            dropdown.appendChild(dropdownInput);
-            dropdown.appendChild(button);
+                var button = document.createElement("button");
+                button.className = "btn dropdownButton";
+                button.innerHTML = "&#9660;";
 
-            console.log("Initialized dropdown in section: " + dropdownContainerName);
-            initializeEventListeners();
+                dropdownSection.appendChild(wrapper);
+                wrapper.appendChild(dropdown);
+                dropdown.appendChild(dropdownInput);
+                dropdown.appendChild(button);
+
+                initializeEventListeners(dropdownSection);
+            })
         }
 
 
-
-        function initializeEventListeners(){
-            dropdownsSection.querySelector(".dropdown").addEventListener("click", function(e){
+        function initializeEventListeners(dropdownSection){
+            dropdownSection.querySelector(".dropdown").addEventListener("click", function(e){
                 e.stopPropagation();
-                openDropdownList();
+                refreshInputs();
+                closeAllDropdowns();
+                openDropdownList(dropdownSection);
             });
-            dropdownsSection.querySelector(".dropdownInput").addEventListener("input", function(e){
-                clearDropdownListItems();
+            dropdownSection.querySelector(".dropdownInput").addEventListener("focus", function(){
+                openDropdownList(dropdownSection);
+            });
+            dropdownSection.querySelector(".dropdownInput").addEventListener("input", function(e){
+                openDropdownList(dropdownSection);
+                clearDropdownListItems(dropdownSection);
                 var sortedArray = getMatchesFromArray(e.target.value);
-                generateDropdownListItems(sortedArray);
+                generateDropdownListItems(dropdownSection, sortedArray);
             });
         }
 
@@ -118,18 +138,18 @@ window.onload = function(){
             return dropdownDataSorted;
         }
 
-        function openDropdownList(){
-            if (!dropdownsSection.querySelector(".dropdownList")) {
+        function openDropdownList(dropdownSection){
+            if (!dropdownSection.querySelector(".dropdownList")) {
                 var dropdownList = document.createElement("ul");
                 dropdownList.className = "dropdownList";
-                dropdownsSection.querySelector(".dropdown").appendChild(dropdownList);
-                dropdownsSection.getElementsByClassName("dropdownInput")[0].focus();
-                dropdownsSection.getElementsByClassName("dropdownInput")[0].value="";
-                generateDropdownListItems(dropdownData);
+                dropdownSection.querySelector(".dropdown").appendChild(dropdownList);
+                dropdownSection.getElementsByClassName("dropdownInput")[0].focus();
+                dropdownSection.getElementsByClassName("dropdownInput")[0].value="";
+                generateDropdownListItems(dropdownSection, dropdownData);
             }
         }
 
-        function generateDropdownListItems(array){
+        function generateDropdownListItems(dropdownSection, array){
             array.forEach(function(listItem){
                 var dropdownListItem = document.createElement("li");
                 dropdownListItem.className = "dropdownListItem";
@@ -138,43 +158,46 @@ window.onload = function(){
                 dropdownListItem.addEventListener("click", function(e){
                     e.stopPropagation();
                     if(e.target.dataset.id !== "error") {
-                        setInputValue(parseInt(e.target.dataset.id), array);
-                        currentValue = e.target.dataset.id;
-                        console.log("Current value: ", currentValue);
+                        setInputValue(parseInt(e.target.dataset.id), array, dropdownSection);
+                        var currentDropdownNumber = Array.from(dropdownSections).indexOf(dropdownSection);
+                        currentValues[currentDropdownNumber] = e.target.dataset.id;
                         closeAllDropdowns();
+                        console.log(currentValues);
                     }
                 });
-                dropdownsSection.querySelector(".dropdownList").appendChild(dropdownListItem);
+                if(dropdownSection.querySelector(".dropdownList")){
+                    dropdownSection.querySelector(".dropdownList").appendChild(dropdownListItem);
+                }
             });
-            var dropdownListHeight = dropdownsSection.querySelector(".dropdownList").offsetHeight;
-            var toBottom = getDropdownBottomOffset(dropdownListHeight);
-            console.log(dropdownListHeight);
-            console.log(toBottom);
+            var dropdownListHeight = dropdownSection.querySelector(".dropdownList").offsetHeight;
+            var toBottom = getDropdownBottomOffset(dropdownSection);
             if(toBottom < dropdownListHeight) {
-                dropdownsSection.querySelector(".dropdownList").className += " top";
+                dropdownSection.querySelector(".dropdownList").className += " top";
             }
         }
 
         // Setting label into input field by id of element
-        function setInputValue(id, array){
+        function setInputValue(id, array, dropdownSection){
             var label;
             array.forEach(function(obj){
                 if(obj["id"] == id && obj["id"]!== "error"){
                     label = obj["label"];
                 }
             });
-            dropdownsSection.querySelector(".dropdownInput").value = label;
+            dropdownSection.querySelector(".dropdownInput").value = label;
         }
 
         // Clearing dropdown list (before generate new list items with input matches)
-        function clearDropdownListItems(){
-            dropdownsSection.querySelector(".dropdownList").innerHTML = "";
+        function clearDropdownListItems(dropdownSection){
+            if(dropdownSection.querySelector(".dropdownList")){
+                dropdownSection.querySelector(".dropdownList").innerHTML = "";
+            }
         }
 
         // Getting bottom offset for dropdown list
-        function getDropdownBottomOffset(){
+        function getDropdownBottomOffset(dropdownSection){
             var windowInnerHeight = window.innerHeight;
-            var bottomOffset = dropdownsSection.querySelector(".dropdown").getBoundingClientRect().bottom;
+            var bottomOffset = dropdownSection.querySelector(".dropdown").getBoundingClientRect().bottom;
             return (windowInnerHeight-bottomOffset);
         }
 
@@ -198,23 +221,8 @@ window.onload = function(){
         { "label": "Oakville", "id": 11 }
     ]
 
-    const DROPDOWN_DATA_2 = [
-        { "label": "Blue", "id": 0 }, 
-        { "label": "Green", "id": 1 }, 
-        { "label": "Red", "id": 2 },
-        { "label": "Yellow", "id": 3 },
-        { "label": "Gray", "id": 4 },
-        { "label": "Orange", "id": 5 },
-        { "label": "Black", "id": 6 },
-        { "label": "Purple", "id": 7 },
-        { "label": "White", "id": 8 }
-    ]
-
     var dropdown1 = new Dropdown();
     dropdown1.init("dropdown1", DROPDOWN_DATA_1);
-
-    var dropdown2 = new Dropdown();
-    dropdown2.init("dropdown2", DROPDOWN_DATA_2);
 
 }
 
