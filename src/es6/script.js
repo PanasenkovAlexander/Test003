@@ -6,17 +6,12 @@ window.onload = function(){
     var Dropdown = function(){
 
         var dropdownData;
-        var dropdownContainerName;
         var dropdownSections;
         var currentValues = [];
 
         function initializeDropdown(container, data){
             dropdownData = data;
-            dropdownContainerName = container;
-
             dropdownSections = document.getElementsByClassName(container);
-
-            console.log(dropdownContainerName);
 
             createDropdown();
             initCurrentValues();
