@@ -5,13 +5,16 @@
     justify-content: space-between
     align-items: center
     
-    
+.dropdown-container
+    width: 500px
+  
 .dropdown
     display: inline-block
     margin: 0 auto
     text-align: center
     position: relative
-
+    overfow: hidden
+    
     &Input
         display: inline-block
         width: auto
@@ -33,15 +36,29 @@
         overflow-y: auto
         height: auto
         max-height: 200px
+        display: none
+        min-height: 42px
+        &:before
+            content: 'No matches'
+            position: absolute
+            top: 50%
+            left: 50%
+            transform: translate(-50%, -50%)
+            z-index: -1
         &.top
             bottom: 105%
             top: auto
+        &.active
+            display: block
     &ListItem
         cursor: pointer
         height: 40px
         background-color: #fff
         line-height: 40px
-        &:nth-child(odd)
-            background-color: #f4f4f4
+        display: block
+        border-bottom: 1px solid #c5c5c5
+
+        &.invisible
+            display: none
         &:hover
             background-color: lightgray

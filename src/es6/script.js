@@ -13,7 +13,7 @@ window.onload = function(){
             dropdownData = data;
             dropdownSections = document.getElementsByClassName(container);
 
-            createDropdown();
+            generateDropdown();
             initCurrentValues();
         }
 
@@ -34,21 +34,16 @@ window.onload = function(){
             Array.from(dropdownSections).forEach(function(dropdownSection){
                 currentValues.push(dropdownSection.querySelector(".dropdownInput").value);
             });
-            console.log(currentValues);
         }
 
-        // Closing all dropdowns reseting focus on inputs (when resizing, scrolling and clicking outside of dropdowns)
         function closeAllDropdowns(){
-            Array.from(dropdownSections).forEach(function(dropdownSection){
-                var dropdownList = dropdownSection.querySelector(".dropdownList");
-                if(dropdownList){
-                    dropdownList.parentNode.removeChild(dropdownList);
-                }
+            var dropdownLists = document.getElementsByClassName("dropdownList");
+            Array.from(dropdownLists).forEach(function(dropdownList){
+                dropdownList.classList.remove("active");
+                dropdownList.classList.remove("top");
             });
-            
         }
 
-        // Setting current values into inputs (when resizing, scrolling and clicking outside of dropdowns)
         function setCurrentValues(){
             var label;
             currentValues.forEach(function(currentValue, index){
@@ -58,16 +53,19 @@ window.onload = function(){
                             label = obj["label"];
                         }
                     });
+                    if(!dropdownSections[index].querySelector(".dropdownInput").value) {
+                        currentValues[index] = "";
+                        label = "";
+                    }
                     dropdownSections[index].querySelector(".dropdownInput").value = label;
                 } else {
                     dropdownSections[index].querySelector(".dropdownInput").value = "";
                 }
             });
-            
+            // console.log(currentValues);
         }
 
-        function createDropdown(){
-
+        function generateDropdown(){
             Array.from(dropdownSections).forEach(function(dropdownSection){
                 var wrapper = document.createElement("div");
                 wrapper.className = "wrapper";
@@ -92,86 +90,80 @@ window.onload = function(){
                 dropdown.appendChild(dropdownInput);
                 dropdown.appendChild(button);
 
-                initializeEventListeners(dropdownSection);
-            })
+                initializeDropdownEventListeners(dropdownSection);
+                generateDropdownList(dropdownSection);
+                generateDropdownListItems(dropdownSection, dropdownData);
+
+            });
         }
 
-
-        function initializeEventListeners(dropdownSection){
-            dropdownSection.querySelector(".dropdown").addEventListener("click", function(e){
+        function initializeDropdownEventListeners(dropdownSection){
+            dropdownSection.querySelector(".dropdownButton").addEventListener("click", function(e){
                 e.stopPropagation();
-                refreshInputs();
                 closeAllDropdowns();
-                openDropdownList(dropdownSection);
+                showDropdownList(dropdownSection);
+                dropdownSection.querySelector(".dropdownInput").focus();
+                dropdownSection.querySelector(".dropdownInput").value = "";
             });
-            dropdownSection.querySelector(".dropdownInput").addEventListener("focus", function(){
-                openDropdownList(dropdownSection);
+            dropdownSection.querySelector(".dropdownInput").addEventListener("click", function(e){
+                e.stopPropagation();
+                closeAllDropdowns();
+                showDropdownList(dropdownSection);
+                dropdownSection.querySelector(".dropdownInput").value = "";
+
             });
             dropdownSection.querySelector(".dropdownInput").addEventListener("input", function(e){
-                openDropdownList(dropdownSection);
-                clearDropdownListItems(dropdownSection);
-                var sortedArray = getMatchesFromArray(e.target.value);
-                generateDropdownListItems(dropdownSection, sortedArray);
+                showDropdownList(dropdownSection);
+                sortDropdownListItems(e.target.value, dropdownSection);
             });
         }
 
-        // Getting array of matched objects from objects aray
-        function getMatchesFromArray(string){
-            var dropdownDataSorted = [];
-            if(string){
-                dropdownData.forEach(function(item){
-                    if(string && (item.label.startsWith(string) || item.label.startsWith(string.charAt(0).toUpperCase() + string.slice(1)))){
-                        dropdownDataSorted.push(item);
-                    }
-                });
-                if(dropdownDataSorted.length<=0){
-                    dropdownDataSorted = [{"label" : "No matching elements", "id" : "error"}];
+        function sortDropdownListItems(string, dropdownSection){
+            var listItems = dropdownSection.getElementsByClassName("dropdownListItem");
+            Array.from(listItems).forEach(function(listItem){
+                listItem.classList.remove("invisible");
+                if( !(listItem.textContent.startsWith(string) || listItem.textContent.startsWith(string.charAt(0).toUpperCase() + string.slice(1)))){
+                    listItem.classList.add("invisible");
                 }
-            } else {
-                dropdownDataSorted = dropdownData;
-            }
-            return dropdownDataSorted;
+            });
         }
 
-        function openDropdownList(dropdownSection){
-            if (!dropdownSection.querySelector(".dropdownList")) {
-                var dropdownList = document.createElement("ul");
-                dropdownList.className = "dropdownList";
-                dropdownSection.querySelector(".dropdown").appendChild(dropdownList);
-                dropdownSection.getElementsByClassName("dropdownInput")[0].focus();
-                dropdownSection.getElementsByClassName("dropdownInput")[0].value="";
-                generateDropdownListItems(dropdownSection, dropdownData);
+        function generateDropdownList(dropdownSection){
+            var dropdownList = document.createElement("ul");
+            dropdownList.className = "dropdownList";
+            dropdownSection.querySelector(".dropdown").appendChild(dropdownList);
+        }
+
+        function showDropdownList(dropdownSection){
+            if(!dropdownSection.querySelector(".dropdownList").classList.contains("active")){
+                dropdownSection.querySelector(".dropdownList").classList.add("active");
+                var dropdownListHeight = dropdownSection.querySelector(".dropdownList").offsetHeight;
+                var toBottom = getDropdownBottomOffset(dropdownSection);
+                if(toBottom < dropdownListHeight && !dropdownSection.querySelector(".dropdownList").classList.contains("top")) {
+                    dropdownSection.querySelector(".dropdownList").className += " top";
+                } else {
+                    dropdownSection.querySelector(".dropdownList").classList.remove("top");
+                }
             }
         }
 
-        function generateDropdownListItems(dropdownSection, array){
-            array.forEach(function(listItem){
+        function generateDropdownListItems(dropdownSection){
+            dropdownData.forEach(function(listItem){
                 var dropdownListItem = document.createElement("li");
                 dropdownListItem.className = "dropdownListItem";
                 dropdownListItem.setAttribute("data-id", listItem["id"]);
                 dropdownListItem.innerHTML = listItem["label"];
                 dropdownListItem.addEventListener("click", function(e){
                     e.stopPropagation();
-                    if(e.target.dataset.id !== "error") {
-                        setInputValue(parseInt(e.target.dataset.id), array, dropdownSection);
-                        var currentDropdownNumber = Array.from(dropdownSections).indexOf(dropdownSection);
-                        currentValues[currentDropdownNumber] = e.target.dataset.id;
-                        closeAllDropdowns();
-                        console.log(currentValues);
-                    }
+                    setInputValue(parseInt(e.target.dataset.id), dropdownData, dropdownSection);
+                    var currentDropdownNumber = Array.from(dropdownSections).indexOf(dropdownSection);
+                    currentValues[currentDropdownNumber] = e.target.dataset.id;
+                    closeAllDropdowns();
                 });
-                if(dropdownSection.querySelector(".dropdownList")){
-                    dropdownSection.querySelector(".dropdownList").appendChild(dropdownListItem);
-                }
+                dropdownSection.querySelector(".dropdownList").appendChild(dropdownListItem);
             });
-            var dropdownListHeight = dropdownSection.querySelector(".dropdownList").offsetHeight;
-            var toBottom = getDropdownBottomOffset(dropdownSection);
-            if(toBottom < dropdownListHeight) {
-                dropdownSection.querySelector(".dropdownList").className += " top";
-            }
         }
 
-        // Setting label into input field by id of element
         function setInputValue(id, array, dropdownSection){
             var label;
             array.forEach(function(obj){
@@ -182,14 +174,6 @@ window.onload = function(){
             dropdownSection.querySelector(".dropdownInput").value = label;
         }
 
-        // Clearing dropdown list (before generate new list items with input matches)
-        function clearDropdownListItems(dropdownSection){
-            if(dropdownSection.querySelector(".dropdownList")){
-                dropdownSection.querySelector(".dropdownList").innerHTML = "";
-            }
-        }
-
-        // Getting bottom offset for dropdown list
         function getDropdownBottomOffset(dropdownSection){
             var windowInnerHeight = window.innerHeight;
             var bottomOffset = dropdownSection.querySelector(".dropdown").getBoundingClientRect().bottom;
@@ -216,8 +200,24 @@ window.onload = function(){
         { "label": "Oakville", "id": 11 }
     ]
 
+    const DROPDOWN_DATA_2 = [
+        { "label": "Red", "id": 0 }, 
+        { "label": "Blue", "id": 1 }, 
+        { "label": "Green", "id": 2 },
+        { "label": "Yellow", "id": 3 },
+        { "label": "White", "id": 4 },
+        { "label": "Brown", "id": 5 },
+        { "label": "Pink", "id": 6 },
+        { "label": "Black", "id": 7 },
+        { "label": "Purple", "id": 8 },
+        { "label": "Gray", "id": 9 }
+    ]
+
     var dropdown1 = new Dropdown();
     dropdown1.init("dropdown1", DROPDOWN_DATA_1);
+
+    var dropdown2 = new Dropdown();
+    dropdown2.init("dropdown2", DROPDOWN_DATA_2);
 
 }
 
