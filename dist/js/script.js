@@ -773,6 +773,10 @@ window.onload = function () {
                 dropdownList.classList.remove("active");
                 dropdownList.classList.remove("top");
             });
+            var dropdownListItems = document.getElementsByClassName("dropdownListItem");
+            (0, _from2.default)(dropdownListItems).forEach(function (dropdownListItem) {
+                dropdownListItem.classList.remove("invisible");
+            });
         }
 
         function setCurrentValues() {
