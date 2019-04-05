@@ -841,6 +841,12 @@ window.onload = function () {
                 showDropdownList(dropdownSection);
                 dropdownSection.querySelector(".dropdownInput").value = "";
             });
+            dropdownSection.querySelector(".dropdownInput").addEventListener("focus", function (e) {
+                e.stopPropagation();
+                closeAllDropdowns();
+                showDropdownList(dropdownSection);
+            });
+
             dropdownSection.querySelector(".dropdownInput").addEventListener("input", function (e) {
                 showDropdownList(dropdownSection);
                 sortDropdownListItems(e.target.value, dropdownSection);
